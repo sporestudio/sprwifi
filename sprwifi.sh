@@ -19,6 +19,7 @@ trap ctrl_c INT
 function ctrl_c() {
 	echo -e "\n${yellowColour}[*]${endColour}${grayColour}Exiting...${endColour}"
 	tput cnorm # Show the cursor again
+	airmon-ng stop ${network_card}mon >/dev/null 2>&1
 	exit 0
 }
 
@@ -43,6 +44,7 @@ function dependencies() {
 	echo -e "${yellowColour}[*]${endColour}${grayColour}Checking necessary dependencies...${endColour}"
 	sleep 2
 
+	# loop that runs through each of the elements that we wnat to install
 	for program in "${dependencies[@]}"; do
 		echo -ne "\n${yellowColour}[*]${endColour}${blueColor} Tool${endColour}${grayColour} $program${endColour}${blueColor}...${endColour}"
 
@@ -52,7 +54,9 @@ function dependencies() {
 		if [ "$(echo $?)" == "0" ]; then
 			echo -e "${greenColour}(V)${endColour}"
 		else
-			echo -e "${redColour}(X)${endColour}"
+			echo -e "${redColour}(X)${endColour}\n"
+			echo -e "${yellowColour}[*]${endColour}${grayColour} Installing tool $program...${endColour}"
+			pacman -S --noconfirm $program >/dev/null 2>&1 # installing the program with non interactive mode
 		fi
 		sleep 1
 
@@ -61,7 +65,14 @@ function dependencies() {
 
 # Function to proceed with the attackmode
 function startAttack() {
-	echo "starting the attack"
+	clear
+	echo -e "${yellowColour}[*]${endColour}${grayColour} Configuring network card in monitor mode...${endColour}\n"
+	airmon-ng start $network_card >/dev/null 2>&1                                        # Starting monitor mode
+	ifconfig ${network_card}mon down && macchanger -a ${network_card}mon >/dev/null 2>&1 # We deregister teh network card and assign a random mac address
+	ifconfig ${network_card}mon up
+	killall dhclient wpa_supplicant 2>/dev/null 2>&1.0 # Here we re-discharge the card and kill the conflicting process
+
+	echo -e "${yellowColour}[+]${endColour}${grayColour} New mac address: ${endColour}${grayColour}$(macchanger -s ${network_card}mon | grep -i current | xargs | awk 'NF{print $NF}')${endColour}"
 }
 
 ## MAIN FUNCTION ##
@@ -88,6 +99,7 @@ if [ "$(id -u)" == "0" ]; then
 		dependencies
 		startAttack
 		tput cnorm
+		airmon-ng stop ${network_card}mon >/dev/null 2>&1
 	fi
 
 else
