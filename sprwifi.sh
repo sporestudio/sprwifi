@@ -30,10 +30,19 @@ function helpPanel() {
 	echo -e "\n${grayColour}sprwifi - Next generation wifi cracker version 1.0${endColour}"
 	echo -e "${grayColour}Developed by sporestudio${endColour}"
 	echo -e "\n\n${purplecolor}${endColour}${grayColour}ATTACK MODE:${endColour}"
-	echo -e "\n\t${grayColour}Handshake${endColour}"
-	echo -e "\t${grayColour}PKMID${endColour}"
+	echo -ne "\n ${grayColour}-a${endColour}${grayColour} Handshake:${endColour}"
+	echo -ne "\t${grayColour}Captures the authentication message exchange between a client device and a Wi-Fi access point.${endColour}"
+	echo -e "\n\t\t${grayColour}This exchange contains information that can be used to attempt to decrypt the network's security key.${endColour}"
+	echo -ne "\n ${grayColour}-a${endColour}${grayColour} PKMID:${endColour}"
+	echo -ne "\t${grayColour}PMKID mode (Pairwise Master Key Identifier), the attacker can capture the PMKID of a Wi-Fi access point${endColour}"
+	echo -ne "\n\t\t${grayColour}without needing to capture a complete handshake. The PMKID is an identifier used in the authentication${endColour}"
+	echo -e "\n\t\t${grayColour}process of WPA/WPA2-protected Wi-Fi networks.${endColour}"
 	echo -e "\n\n${grayColour}NETWORK CARD NAME:${endColour}"
-	echo -e ""
+	echo -ne "\n ${grayColour}-n${endColour}${grayColour} <net_card>:${endColour}"
+	echo -e "\t${grayColour}User network card name${endColour}"
+	echo -e "\n\n${grayColour}HELP PANEL:${endColour}"
+	echo -ne "\n ${grayColour}-h${endColour}${grayColour} Help panel:${endColour}"
+	echo -e "\t${grayColour}Displays the help panel${endColour}"
 	exit 0
 }
 
