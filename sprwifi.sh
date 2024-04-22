@@ -52,7 +52,7 @@ function dependencies() {
 	clear
 	dependencies=(aircrack-ng macchanger xterm)
 
-	echo -e "${yellowColour}[*]${endColour}${grayColour}Checking necessary dependencies...${endColour}"
+	echo -e "${yellowColour}[*]${endColour}${grayColour} Checking necessary dependencies...${endColour}"
 	sleep 2
 
 	# loop that runs through each of the elements that we wnat to install
@@ -76,7 +76,7 @@ function dependencies() {
 
 # Function to proceed with the attack mode
 function startAttack() {
-	if [ "$(echo $mode)" == "Handshake" ]; then
+	if [ "$(echo $mode)" == "handshake" ]; then
 		clear
 		echo -e "${yellowColour}[*]${endColour}${grayColour} Configuring network card in monitor mode...${endColour}\n"
 		airmon-ng start $network_card >/dev/null 2>&1                                        # Starting monitor mode
