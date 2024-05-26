@@ -13,22 +13,22 @@ The second attack mode is the PKMID ClientLess Attack, which focuses its attenti
 
 
 ## Handshake attack mode
-Handshake Process:
+	Handshake Process:
+	
+	    Message 1: The AP sends a nonce (a random number) to the client.
+	    Message 2: The client generates its own nonce, derives a Pairwise Transient Key (PTK) using both nonces and the PSK, and sends its nonce and a Message Integrity Code (MIC) back to the AP.
+	    Message 3: The AP receives the client's nonce, derives the PTK, and sends another message containing its MIC.
+	    Message 4: The client confirms the PTK and sends a final message to the AP.
 
-    Message 1: The AP sends a nonce (a random number) to the client.
-    Message 2: The client generates its own nonce, derives a Pairwise Transient Key (PTK) using both nonces and the PSK, and sends its nonce and a Message Integrity Code (MIC) back to the AP.
-    Message 3: The AP receives the client's nonce, derives the PTK, and sends another message containing its MIC.
-    Message 4: The client confirms the PTK and sends a final message to the AP.
-
-Handshake Capture:
-
-    An attacker can capture this handshake by listening to the communication between the client and AP using tools like airmon-ng and airodump-ng.
-    The attacker doesn’t need to be actively connected to the network, just within range to capture the handshake packets.
+	Handshake Capture:
+	
+	    An attacker can capture this handshake by listening to the communication between the client and AP using tools like airmon-ng and airodump-ng.
+	    The attacker doesn’t need to be actively connected to the network, just within range to capture the handshake packets.
   
-Cracking the Handshake:
+	Cracking the Handshake:
 
-    Once the handshake is captured, the attacker can use tools like aircrack-ng to perform a dictionary or brute-force attack on the PSK.
-    The attacker uses the captured handshake to verify guesses against the PSK until the correct one is found.
+	    Once the handshake is captured, the attacker can use tools like aircrack-ng to perform a dictionary or brute-force attack on the PSK.
+	    The attacker uses the captured handshake to verify guesses against the PSK until the correct one is found.
     
 
 ## PKIMD attack mode
@@ -66,7 +66,7 @@ Developed by sporestudio
 ATTACK MODE:
 
  -a Handshake:	Captures the authentication message exchange between a client device and a Wi-Fi access point.
-		This exchange contains information that can be used to attempt to decrypt the network's security key.
+		This exchange contains information that can be used to attempt to decrypt the network security key.
 
  -a PKMID:	PMKID mode (Pairwise Master Key Identifier), the attacker can capture the PMKID of a Wi-Fi access point
 		without needing to capture a complete handshake. The PMKID is an identifier used in the authentication
